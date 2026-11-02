@@ -67,6 +67,12 @@ function addHistory(productId, price, available, capturedAt) {
   writeJson(historyPath, history);
   return Promise.resolve();
 }
+function listHistory(productId) {
+  return Promise.resolve(history
+    .filter(item => item.product_id === productId)
+    .sort((a, b) => b.captured_at.localeCompare(a.captured_at))
+    .slice(0, 500));
+}
 async function updateStock(id, stock) {
   const product = products.find(item => item._id === id);
   if (!product) return null;
@@ -83,4 +89,4 @@ async function reserveStock(id, amount) {
   return product;
 }
 
-module.exports = { listProducts, upsertProduct, addHistory, updateStock, reserveStock };
+module.exports = { listProducts, listHistory, upsertProduct, addHistory, updateStock, reserveStock };

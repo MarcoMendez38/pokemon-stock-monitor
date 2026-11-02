@@ -41,6 +41,10 @@ app.get('/api/products', async (_req, res) => {
   const products = await db.listProducts();
   res.json(products.map(product => ({ ...product, id: product._id, price_dropped: Number(product.price != null && product.previous_price != null && product.price < product.previous_price) })));
 });
+app.get('/api/products/:id/history', async (req, res) => {
+  const history = await db.listHistory(req.params.id);
+  res.json(history);
+});
 app.patch('/api/products/:id/stock', requireAdminKey, async (req, res) => {
   const stock = Number(req.body.stock);
   if (!Number.isInteger(stock) || stock < 0) return res.status(400).json({ error: 'stock debe ser un entero no negativo' });
@@ -66,7 +70,14 @@ app.get('*', (_req, res, next) => {
 const port = Number(process.env.PORT || 3000);
 app.listen(port, () => console.log(`Monitor Pokémon escuchando en http://localhost:${port}`));
 const minutes = Number(process.env.MONITOR_INTERVAL_MINUTES || 15);
-cron.schedule(`*/${Math.max(1, minutes)} * * * *`, () => runMonitor().catch((error) => console.error('Error de monitoreo:', error.message)));
+let monitorRunning = false;
+async function scheduledMonitor() {
+  if (monitorRunning) return console.warn('Monitoreo omitido: todavía hay una ejecución en curso');
+  monitorRunning = true;
+  try { await runMonitor(); } catch (error) { console.error('Error de monitoreo:', error.message); }
+  finally { monitorRunning = false; }
+}
+cron.schedule(`*/${Math.max(1, minutes)} * * * *`, scheduledMonitor);
 runMonitor()
   .then(result => console.log(`Sincronización inicial: ${result.scanned} productos Pokémon`))
   .catch(error => console.error('Error en sincronización inicial:', error.message));
