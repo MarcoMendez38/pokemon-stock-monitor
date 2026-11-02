@@ -32,7 +32,7 @@ Copia `.env.example` a `.env`:
 - `WHATSAPP_ENABLED`: `true` para activar envíos.
 - `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_RECIPIENT`: credenciales y teléfono destino de Meta.
 
-En Render conviene usar un disco persistente para `DATABASE_PATH`, o reemplazar la capa SQLite por PostgreSQL antes de operar a escala.
+En Render conviene usar un disco persistente para `DATABASE_PATH`. Si la ruta configurada no está disponible, el servidor usa `/tmp/pokemon-monitor/monitor.db` y muestra una advertencia; ese almacenamiento se pierde al reiniciar.
 
 El dashboard solicita la API key administrativa para las acciones protegidas. Se guarda en el almacenamiento local del navegador y se envía en el encabezado `X-API-Key`.
 

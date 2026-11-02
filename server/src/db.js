@@ -2,9 +2,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const databasePath = path.resolve(process.env.DATABASE_PATH || './data/monitor.db');
+const configuredPath = path.resolve(process.env.DATABASE_PATH || './data/monitor.db');
+let databasePath = configuredPath;
+try {
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+} catch (error) {
+  if (!['EACCES', 'EROFS', 'EPERM'].includes(error.code)) throw error;
+  databasePath = path.resolve('/tmp/pokemon-monitor/monitor.db');
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+  console.warn(`No se puede escribir en ${configuredPath}; usando almacenamiento temporal en ${databasePath}`);
+}
 const historyPath = `${databasePath}.history`;
-fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 
 function readJson(filePath, fallback) {
   try {
